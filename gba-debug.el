@@ -18,38 +18,33 @@
   :group 'gba-debug
   :type 'string)
 
-;; base-template that will be used to launch a debug session with the right parameters
-(dap-register-debug-template "GBA debug"
-                             (list :name "GBA debug"
-                                   :type "gdbserver"
-                                   :request "attach"
-                                   :gdbpath gba-debug-gdb-path
-                                   :target ":2345"))
-
+;; If you have already started a mgba session yourself, just run this one
 (defun gba-debug--run-debugger ()
   ;; TODO: rewrite so car won't fail on empty list
-  (let* ((project-directory (locate-dominating-file default-directory "Makefile"))
-         (elf-file (car (f-glob "*.elf" project-directory))))
-    (dap-debug-edit-template (list :name "GBA debug"
-                                   :executable elf-file
-                                   :cwd project-directory))))
+  (let* ((project-directory (f-full (locate-dominating-file default-directory "Makefile")))
+         (elf-file (f-filename (car (f-glob "*.elf" project-directory)))))
+    (dap-debug (list :name "GBA debug"
+                     :type "gdbserver"
+                     :request "attach"
+                     :gdbpath gba-debug-gdb-path
+                     :target ":2345"
+                     :executable elf-file
+                     :cwd project-directory))))
 
 (defun gba-debug--run-mgba ()
   (let* ((project-directory (locate-dominating-file default-directory "Makefile"))
          (gba-file (car (f-glob "*.gba" project-directory))))
-    (shell-command (string-join (list gba-debug-mgba-path " --gdb " gba-file)))))
+    (async-shell-command (string-join (list gba-debug-mgba-path " --gdb " gba-file)))))
 
 (defun gba-debug--handle-compilation-make-buffer (buffer msg)
   (if (string-match "^finished" msg)
-      (progn (delete-windows-on buffer)
-             (delete 'gba-debug--handle-compilation-make-buffer compilation-finish-functions)
-
-             ;; compilation succesful, start mgba
-             ;; TODO: are we back to our previous buffer always at this point?
-             (gba-debug--run-mgba)
-             ;; TODO: are delays needed? better method to make sure mGBA has started?
-             (sleep-for 5)
-             (gba-debug--run-debugger))))
+      (progn 
+        ;; compilation succesful, start mgba
+        (gba-debug--run-mgba)
+        (gba-debug--run-debugger)
+        
+        (kill-buffer buffer)
+        (delete 'gba-debug--handle-compilation-make-buffer compilation-finish-functions))))
 
 (defun gba-debug-program ()
   (interactive)
