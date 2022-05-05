@@ -18,7 +18,6 @@
   :group 'gba-debug
   :type 'string)
 
-;; If you have already started a mgba session yourself, just run this one
 (defun gba-debug--run-debugger ()
   ;; TODO: rewrite so car won't fail on empty list
   (let* ((project-directory (f-full (locate-dominating-file default-directory "Makefile")))
@@ -33,7 +32,8 @@
 
 (defun gba-debug--run-mgba ()
   (let* ((project-directory (locate-dominating-file default-directory "Makefile"))
-         (gba-file (car (f-glob "*.gba" project-directory))))
+         (gba-file (car (f-glob "*.gba" project-directory)))
+         (display-buffer-alist (list (list "\\*Async Shell Command\\*.*" #'display-buffer-no-window))))
     (async-shell-command (string-join (list gba-debug-mgba-path " --gdb " gba-file)))))
 
 (defun gba-debug--handle-compilation-make-buffer (buffer msg)
@@ -48,7 +48,8 @@
 
 (defun gba-debug-program ()
   (interactive)
-  (let ((default-directory (locate-dominating-file default-directory "Makefile")))
+  (let ((default-directory (locate-dominating-file default-directory "Makefile"))
+        (display-buffer-alist (list (list "\\*compilation\\*" #'display-buffer-no-window))))
     (add-to-list 'compilation-finish-functions 'gba-debug--handle-compilation-make-buffer)
     (compile "make")))
 
