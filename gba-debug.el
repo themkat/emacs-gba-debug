@@ -18,10 +18,15 @@
   :group 'gba-debug
   :type 'string)
 
+(defun gba-debug--get-file-of-type (type directory)
+  (let ((filematches (f-glob (string-join (list "*." type)) project-directory)))
+    (if (zerop (length filematches))
+        (error (string-join (list "Could not find " type " file! Was compilation succesful?")))
+      (car filematches))))
+
 (defun gba-debug--run-debugger ()
-  ;; TODO: rewrite so car won't fail on empty list
   (let* ((project-directory (f-full (locate-dominating-file default-directory "Makefile")))
-         (elf-file (f-filename (car (f-glob "*.elf" project-directory)))))
+         (elf-file (f-filename (gba-debug--get-file-of-type "elf" project-directory))))
     (dap-debug (list :name "GBA debug"
                      :type "gdbserver"
                      :request "attach"
@@ -32,7 +37,7 @@
 
 (defun gba-debug--run-mgba ()
   (let* ((project-directory (locate-dominating-file default-directory "Makefile"))
-         (gba-file (car (f-glob "*.gba" project-directory)))
+         (gba-file (gba-debug--get-file-of-type "gba" project-directory))
          (display-buffer-alist (list (list "\\*Async Shell Command\\*.*" #'display-buffer-no-window))))
     (async-shell-command (string-join (list gba-debug-mgba-path " --gdb " gba-file)))))
 
