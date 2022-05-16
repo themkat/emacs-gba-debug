@@ -16,12 +16,14 @@ jobs:
       - uses: conao3/setup-cask@master
         with:
           version: 'snapshot'
-      - name: Install dependencies
+      - name: Setup Melpazoid
         run: |
-          cask install
-      - name: Byte-compile
+          git clone https://github.com/riscy/melpazoid.git ~/melpazoid
+          pip install ~/melpazoid
+      - name: Scan, byte-compile and sanity check package
+        env:
+          LOCAL_REPO: ${{ github.workspace }}
+          RECIPE: (gba-debug :repo "themkat/emacs-gba-debug" :fetcher github)
+          EXIST_OK: false
         run: |
-          cask build
-      - name: Check if elc-file was created (Byte-compile step never returns non-0 status code)
-        run: |
-          cat gba-debug.elc
+          make -C ~/melpazoid
