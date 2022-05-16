@@ -13,9 +13,6 @@ jobs:
       - uses: purcell/setup-emacs@v3.0
         with:
           version: 27.2
-      - uses: conao3/setup-cask@master
-        with:
-          version: 'snapshot'
       - name: Setup Melpazoid
         run: |
           git clone https://github.com/riscy/melpazoid.git ~/melpazoid
