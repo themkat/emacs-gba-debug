@@ -1,25 +1,45 @@
-;;; gba-debug.el --- Better GBA debugging in Emacs
-;; Version: 0.0.1
+;;; gba-debug.el --- Better GBA debugging
 
-;; Simple utilities to make GBA debugging more pleasant
+;; URL: https://github.com/themkat/emacs-gba-debug
+;; Version: 0.0.1
+;; Package-Requires: ((emacs "24.4") (dap-mode "0.7") (f "0.20.0"))
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Simple utilities to make GBA debugging more pleasant.
 ;; Uses compile and dap-gdb-lldb for ease of use
+
+;;; Code:
 
 (require 'dap-mode)
 (require 'dap-gdb-lldb)
 (require 'f)
 
 (defcustom gba-debug-gdb-path "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gdb"
-  "Path to the DevkitARM GDB executable (including executable)"
+  "Path to the DevkitARM GDB executable (including executable)."
   :group 'gba-debug
   :type 'string)
 
 (defcustom gba-debug-mgba-path "/Applications/mGBA.app/Contents/MacOS/mGBA"
-  "Path to the mGBA executable (including executable)"
+  "Path to the mGBA executable (including executable)."
   :group 'gba-debug
   :type 'string)
 
 (defun gba-debug--get-file-of-type (type directory)
-  (let ((filematches (f-glob (string-join (list "*." type)) project-directory)))
+  (let ((filematches (f-glob (string-join (list "*." type)) directory)))
     (if (zerop (length filematches))
         (error (string-join (list "Could not find " type " file! Was compilation succesful?")))
       (car filematches))))
@@ -43,7 +63,7 @@
 
 (defun gba-debug--handle-compilation-make-buffer (buffer msg)
   (if (string-match "^finished" msg)
-      (progn 
+      (progn
         ;; compilation succesful, start mgba
         (gba-debug--run-mgba)
         (gba-debug--run-debugger)
@@ -52,6 +72,7 @@
         (delete 'gba-debug--handle-compilation-make-buffer compilation-finish-functions))))
 
 (defun gba-debug-program ()
+  "Start a GBA debug session. Will compile, start emulator, and open debug session."
   (interactive)
   (let ((default-directory (locate-dominating-file default-directory "Makefile"))
         (display-buffer-alist (list (list "\\*compilation\\*" #'display-buffer-no-window))))
