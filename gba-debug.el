@@ -39,12 +39,14 @@
   :type 'string)
 
 (defun gba-debug--get-file-of-type (type directory)
+  "Gets a file with the extension `type' if it exists"
   (let ((filematches (f-glob (string-join (list "*." type)) directory)))
     (if (zerop (length filematches))
         (error (string-join (list "Could not find " type " file! Was compilation succesful?")))
       (car filematches))))
 
 (defun gba-debug--run-debugger ()
+  "Runs the debugger"
   (let* ((project-directory (f-full (locate-dominating-file default-directory "Makefile")))
          (elf-file (f-filename (gba-debug--get-file-of-type "elf" project-directory))))
     (dap-debug (list :name "GBA debug"
@@ -56,12 +58,14 @@
                      :cwd project-directory))))
 
 (defun gba-debug--run-mgba ()
+  "Starts the emulator in a background shell command buffer"
   (let* ((project-directory (locate-dominating-file default-directory "Makefile"))
          (gba-file (gba-debug--get-file-of-type "gba" project-directory))
          (display-buffer-alist (list (list "\\*Async Shell Command\\*.*" #'display-buffer-no-window))))
     (async-shell-command (string-join (list gba-debug-mgba-path " --gdb " gba-file)))))
 
 (defun gba-debug--handle-compilation-make-buffer (buffer msg)
+  "Handles the result of the compilation; if succesful we should start a debug session."
   (if (string-match "^finished" msg)
       (progn
         ;; compilation succesful, start mgba
