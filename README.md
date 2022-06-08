@@ -15,7 +15,7 @@ For Emacs-related dependencies, you should set up `dap-gdb-lldb`, which [is desc
 
 
 ## Assumptions
-This extension assumes one thing: that you can build using make, and that the command produces an elf-file and gba-file in the same directory. It should also add debug symbols to the elf-file, which is done with the `-g` in the gcc-compiler (and similar for g++ and probably the assembler).
+This extension assumes one thing: that you can build using make, and that the command produces an elf-file and gba-file in the same directory. It should also add debug symbols to the elf-file, which is done with the `-g` flag in the gcc-compiler (and similar for g++ and probably the assembler).
 
 **NOTE:** Experimental support for other build systems and structures are in place, and described below for Rust. 
 
@@ -29,7 +29,7 @@ After these variables are configured, you should be able to run `M-x gba-debug-p
 
 
 ### Usage with Rust (experimental)
-Some minor experiments have been done using Rust with [the gba crate](https://github.com/rust-console/gba). In addition to the variables below, you have a few others you can configure to make it work for Rust. If you only want to set these variables for Rust projects you can use .dir-locals or just set them with `setq-local` in your Rust mode hook (I recommend using [Rustic](https://github.com/brotzeit/rustic)). 
+Some minor experiments have been done using Rust with [the gba crate](https://github.com/rust-console/gba). In addition to the variables above, you have a few others you can configure to make it work for Rust. If you only want to set these variables for Rust projects you can use .dir-locals or just set them with `setq-local` in your Rust mode hook (I recommend using [Rustic](https://github.com/brotzeit/rustic)). 
 
 - `gba-debug-build-command`: If you do not build your project with make, you can override it with this variable. To build with a Rust project with the gba crate, I set it to `cargo +nightly build`.
 - `gba-debug-projectfile`: When you are using Rust, you probably don't always have a Makefile handy in the project root. In a Rust project you will probably always have a `Cargo.toml` file.
