@@ -2,7 +2,7 @@
 
 ;; URL: https://github.com/themkat/emacs-gba-debug
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24.4") (dap-mode "0.7") (f "0.20.0"))
+;; Package-Requires: ((emacs "24.4") (dap-mode "0.7") (f "0.20.0") (helm "3.8.6"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 (require 'dap-mode)
 (require 'dap-gdb-lldb)
 (require 'f)
+(require 'helm)
 
 (defcustom gba-debug-gdb-path "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gdb"
   "Path to the DevkitARM GDB executable (including executable)."
@@ -101,6 +102,30 @@
         (display-buffer-alist (list (list "\\*compilation\\*" #'display-buffer-no-window))))
     (add-to-list 'compilation-finish-functions 'gba-debug--handle-compilation-make-buffer)
     (compile gba-debug-build-command)))
+
+
+;; Experimental memory register watches using HELM
+;; TODO: maybe we should have different ones for video, general memory, dma etc.?
+;; TODO: maybe support a custom option for the user to easily just write one?
+(defvar gba-debug--selected-memory-locations '())
+(defun gba-debug-watch-memory-locations ()
+  "Opens an interactive helm menu where the user can select"
+  (interactive)
+  (setq gba-debug--selected-memory-locations '())
+  (let ((selection-func (lambda (_)
+                          (setq gba-debug--selected-memory-locations
+                                (helm-marked-candidates :all-sources t)))))
+    (helm :buffer "*gba-debug-memory-locations*"
+          :sources (helm-build-sync-source "General controls RAM"
+                     :candidates '(("REG_DSPCNT" . "memory_location_1")
+                                   ("REG_BG0CNT" . "memory_location_2")
+                                   ("REG_DMA0SAD" . "memory_location_3")
+                                   ("REG_DMA0DAD" . "memory_location_4")
+                                   ("REG_DMA0CNT" . "memory_location_5"))
+                     :action selection-func))
+    (dolist (memory-location gba-debug--selected-memory-locations)
+      ;; TODO: find out how we set a watchpoint programatically
+      (message memory-location))))
 
 (provide 'gba-debug)
 ;;; gba-debug.el ends here
