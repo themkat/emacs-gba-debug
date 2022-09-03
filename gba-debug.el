@@ -51,7 +51,8 @@
 ;; TODO: is some sort of custom executable path the best way to solve this?
 ;;       Does not feel like intricate logic to find the executable is worth it...
 (defcustom gba-debug-custom-executable-path nil
-  "Path (relative) to the executable we want to run. Assumes elf-type. Unused if nil."
+  "Path (relative) to the executable we want to run.
+Assumes elf-type. Unused if nil."
   :group 'gba-debug
   :type 'string)
 
@@ -84,7 +85,9 @@
     (async-shell-command (string-join (list gba-debug-mgba-path " --gdb " gba-file)))))
 
 (defun gba-debug--handle-compilation-make-buffer (buffer msg)
-  "Handles the result of the compilation; if succesful we should start a debug session."
+  "Handles the result of the compilation;
+if succesful we should start a debug session.
+BUFFER is the compilation buffer, MSG is currently unused"
   (if (string-match "^finished" msg)
       (progn
         ;; compilation succesful, start mgba
